@@ -1,0 +1,16 @@
+{
+  "_comentario": "Líneas extraídas del programa de Excel EYS.",
+  "lineas": [
+    "LINEA 1 EYS", "LINEA 2 EYS", "LINEA 3 EYS", "ACCUROFILL 1", "ACCUROFILL 2",
+    "LINEA 4 EYS", "TUBOS 1", "TUBOS 2", "LINEA 5 EYS", "DESODORANTES 1",
+    "LINEA 6 EYS", "LINEA 7 EYS", "LINEA 8 EYS", "AXIOMATICA", "DESODORANTES 2", "LINEA 8 (MAQ)"
+  ],
+  "turnos": ["T1", "T2", "T3"],
+  "estados": ["ADELANTADO", "EN TIEMPO", "ATRASADO"],
+  "causalesParo": [
+    { "id": "ALIMENTACION", "nombre": "Tiempo de alimentación", "requiereRevision": false, "activa": true },
+    { "id": "PAUSA_ACTIVA", "nombre": "Pausa activa", "requiereRevision": false, "activa": true },
+    { "id": "SET_UP", "nombre": "Ajuste de Máquina (Set Up)", "requiereRevision": true, "activa": true },
+    { "id": "CAMBIO_TURNO", "nombre": "Cambio de turno", "requiereRevision": true, "activa": true }
+  ]
+}

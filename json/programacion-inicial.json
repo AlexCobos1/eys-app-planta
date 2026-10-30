@@ -1,0 +1,9 @@
+{
+  "_comentario": "Semilla inicial basada en archivo EYS real.",
+  "programacion": [
+    { "linea": "LINEA 2 EYS", "op": "12753759", "codigo": "20-0111393", "producto": "CZ MYMOMENT CP LISO 200ML", "uph": 1020, "horaInicio": 6, "duracion": 4.33, "cantidad": 4418 },
+    { "linea": "LINEA 4 EYS", "op": "12755331", "codigo": "20-0123469", "producto": "ES SUPREME ACLAR CREMA PM 30ML", "uph": 1122, "horaInicio": 6, "duracion": 8, "cantidad": 9240 },
+    { "linea": "TUBOS 1", "op": "12753459", "codigo": "20-0121690", "producto": "ES EXPRESSION SPIRIT CP 130ML", "uph": 1985, "horaInicio": 6, "duracion": 4.65, "cantidad": 9240 },
+    { "linea": "DESODORANTES 1", "op": "12755050", "codigo": "20-0105180", "producto": "CZ XYBOD CLAR DESROLL CC 50 ML", "uph": 3000, "horaInicio": 6, "duracion": 0.72, "cantidad": 2162 }
+  ]
+}
