@@ -96,7 +96,16 @@ function actualizarReadout(){
       } else{ estadoHoraEl.textContent = '⏳ PENDIENTE'; estadoHoraEl.style.color = '#777'; }
     }
     set('roInicio', horaDecimalATexto(prog.horaInicio)); set('roFin', horaDecimalATexto(prog.horaInicio + prog.duracion));
+    
+    // --- ACTUALIZADO: CAJAS SIEMPRE VISIBLES Y CARGA DE VALORES ---
+    const undCaja = prog.undPorCaja || 0;
+    document.getElementById('infoUnidadesCaja').textContent = undCaja > 0 ? `Unidades x caja: ${undCaja}` : `Unidades x caja: --`;
+    const ultima = localStorage.getItem(`ultimaCaja_${op}`) || 0;
+    document.getElementById('ultimaCaja').value = ultima;
+    
   } else {
+    document.getElementById('infoUnidadesCaja').textContent = `Unidades x caja: --`;
+    document.getElementById('ultimaCaja').value = '0';
     const estadoEl = document.getElementById('estadoOpActual'); if (estadoEl){ estadoEl.innerHTML = '⚪ SIN OP SELECCIONADA'; estadoEl.style.color = '#777'; }
     const detalleEl = document.getElementById('detalleEstadoOp'); if (detalleEl){ detalleEl.innerHTML = ''; }
     const estadoHoraEl = document.getElementById('roEstadoHora'); if (estadoHoraEl){ estadoHoraEl.textContent = '—'; estadoHoraEl.style.color = '#777'; }
@@ -118,7 +127,16 @@ async function manejarSubmitControl(e){
     if (res.icon === 'error') await modalError(res.title, res.message); else await modalAlerta(res.title, res.message);
     return;
   }
-  state.usuario = payload.usuario; guardarUsuario(); document.getElementById('fAcumulado').value = ''; document.getElementById('fObservacion').value = '';
+  state.usuario = payload.usuario; guardarUsuario(); 
+  document.getElementById('fAcumulado').value = ''; 
+  document.getElementById('fObservacion').value = '';
+  // --- NUEVO: ACTUALIZAR "ÚLTIMA CAJA" DESPUÉS DE GRABAR ---
+  const cajaIngresada = document.getElementById('cajaActual').value;
+  if (cajaIngresada) {
+    localStorage.setItem(`ultimaCaja_${payload.op}`, cajaIngresada);
+    document.getElementById('ultimaCaja').value = cajaIngresada;
+    document.getElementById('cajaActual').value = ''; // Limpiamos para el próximo registro
+  }
   renderDashboard(); renderHistorico(); actualizarReadout();
   await modalExito('Producción registrada', `Registro guardado correctamente.\nCantidad de la hora: ${fmtInt(res.cantidadHora)}\nCumplimiento: ${fmtPct1(res.cumplimiento)}`);
 }

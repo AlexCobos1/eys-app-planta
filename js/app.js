@@ -47,13 +47,6 @@ document.getElementById('formLogin').addEventListener('submit', async function(e
   document.getElementById('loginPassword').value = ''; 
 });
 
-// Lógica del botón de recuperación
-document.getElementById('btnRecuperar').addEventListener('click', function(e) {
-  e.preventDefault();
-  const correoRecuperacion = "alexix1917@hotmail.com";
-  alert(`Se enviarán las instrucciones para restablecer las contraseñas al correo administrador:\n\n${correoRecuperacion}`);
-});
-
 // 4. Botón visible de Cerrar Sesión
 const btnSalir = document.getElementById('btnSalir');
 if (btnSalir) {
@@ -72,6 +65,7 @@ document.getElementById('fOP').addEventListener('input', function(){ actualizarR
 document.getElementById('formControl').addEventListener('submit', manejarSubmitControl);
 document.getElementById('btnCerrarOpActual').addEventListener('click', cerrarOpActual);
 
+// --- NUEVO: INICIAR OP (PIDIENDO UNIDADES POR CAJA) ---
 document.getElementById('btnIniciarOp').addEventListener('click', async function(){
   const linea = document.getElementById('fLinea').value; const op = document.getElementById('fOP').value.trim();
   if (!linea || !op){ await modalAlerta('Seleccione una OP', 'Debe seleccionar una línea y una OP antes de iniciar.'); return; }
@@ -81,13 +75,25 @@ document.getElementById('btnIniciarOp').addEventListener('click', async function
   if (prog.iniciada === true){ await modalAlerta('OP ya iniciada', 'La OP ya se encuentra en producción.'); return; }
   const opActivaEnLinea = state.programacion.find(p => p.linea.trim().toUpperCase() === linea.trim().toUpperCase() && p.iniciada === true && p.cerrada !== true && p.op !== prog.op);
   if (opActivaEnLinea) { await modalError('Línea ocupada', `No puedes iniciar esta orden. La OP ${opActivaEnLinea.op} está activa.\n\nDebes presionar "🔒 CERRAR OP ACTUAL" antes de iniciar una nueva.`); return; }
+  // 1. Preguntamos las unidades por caja
+  const undPorCajaStr = prompt(`INICIO DE OP ${op}\n\n¿Cuántas unidades vienen embaladas por caja en esta OP?`);
+  if (undPorCajaStr === null) return; // Si el operario cancela
+  const undPorCaja = Number(undPorCajaStr);
+  if (isNaN(undPorCaja) || undPorCaja <= 0) {
+    await modalError('Dato inválido', 'Debe ingresar un número válido mayor a 0 para las unidades por caja.');
+    return;
+  }
+  // 2. Guardamos ese número en la programación de esta OP
+  prog.undPorCaja = undPorCaja;
   prog.iniciada = true;
   state.historialOps.push({ linea: prog.linea, op: prog.op, uph: prog.uph, inicioReal: new Date().toISOString(), finReal: null });
-  await guardarProgramacion(); await guardarHistorialOps();
-  actualizarReadout(); renderTodo();
-  await modalExito('OP iniciada', `La OP ${prog.op} inició correctamente.`);
-});
 
+  await guardarProgramacion(); await guardarHistorialOps();
+  // 3. Reiniciamos el contador de la "Última Caja" a Cero al iniciar una OP nueva
+  localStorage.setItem(`ultimaCaja_${op}`, "0"); 
+  actualizarReadout(); renderTodo();
+  await modalExito('OP iniciada', `La OP ${prog.op} inició correctamente.\nEl sistema calculará ${undPorCaja} unidades por cada caja ingresada.`);
+});
 document.getElementById('formProgramacion').addEventListener('submit', manejarSubmitProgramacion);
 document.getElementById('buscarHistorico').addEventListener('input', renderHistorico);
 document.getElementById('btnExportarHistorico').addEventListener('click', exportarHistoricoXLSX);
@@ -535,3 +541,40 @@ async function init(){
   actualizarReloj(); setInterval(actualizarReloj, 1000); setInterval(verificarActualizaciones, 20000);
 }
 init();
+// --- LÓGICA DE LA CALCULADORA DE CAJAS ---
+document.getElementById('cajaActual').addEventListener('input', function() {
+  const linea = document.getElementById('fLinea').value; 
+  const op = document.getElementById('fOP').value.trim();
+  const prog = buscarProgramacion(linea, op);
+  
+  if (prog && prog.undPorCaja > 0) {
+    const cajaIngresada = Number(this.value);
+    const ultimaCajaStr = document.getElementById('ultimaCaja').value;
+    const ultimaCaja = ultimaCajaStr === '' ? 0 : Number(ultimaCajaStr);
+    
+    // Si el operario escribe un número mayor a la última caja, el sistema calcula solo
+    if (cajaIngresada > ultimaCaja) {
+      const cajasNuevas = cajaIngresada - ultimaCaja;
+      const unidadesCalculadas = cajasNuevas * prog.undPorCaja;
+      
+      // Llenamos el campo bloqueado de unidades con el resultado matemático
+      document.getElementById('fAcumulado').value = unidadesCalculadas;
+    } else {
+      // Si borra el número o pone una caja menor, vaciamos el cálculo
+      document.getElementById('fAcumulado').value = '';
+    }
+  }
+});
+// --- LÓGICA DEL OJITO DE CONTRASEÑAS ---
+document.querySelectorAll('.toggle-password').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const input = document.getElementById(this.getAttribute('data-target'));
+    if (input.type === 'password') {
+      input.type = 'text';
+      this.textContent = '🙈'; // Cambia al icono del monito tapándose (ocultar)
+    } else {
+      input.type = 'password';
+      this.textContent = '👁️'; // Cambia al icono del ojo (mostrar)
+    }
+  });
+});
